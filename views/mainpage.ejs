@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lucy Weather Project</title>
+    <base href="/">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>   
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+     <!-- include jquery CDN -->
+     <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+</head>
+
+<body style="background: #F5F5F5;">
+    <section id="nav-section">
+        <nav class="nav-extended  #000000 black">
+            <div class="nav-wrapper">
+                <img src="images/lucy_logo.png">
+                <ul class="right hide-on-med-and-down">
+                    <li><a href="/home" class="breadcrumb">Home</a></li>
+                </ul>
+            </div>
+        </nav>
+        <main>
+            <!-- <form name="weatherform"> -->
+                <div class="row">
+                    <div class="input-field col l4 m4 s12 inputbox">
+                        <input id="city" class="input" name="city" maxlength="80" type="text" class="validate" required>
+                        <label for="city">City</label>
+                    </div>
+                    <div class="input-field col l4 m4 s12">
+                        <button class="btn waves-effect waves-light indigo" type="button" id="details" >Check Weather
+                            <i class="material-icons right">cloud
+                            </i>
+                        </button>
+                    </div>
+                </div>
+            <!-- </form> -->
+        </main>
+    </section>
+    <section><h1 id ="message"></h1></section>
+    <section>
+    <div class="card" id="card">
+        <div class="container">
+          <h2 class ="city"><b></b></h2>
+          <div class="description-container"> <p id ="Description"></p>
+            <div class="icon"></div></div>
+          <h3 class="info"><span id ="Humidity"></span><span id ="windspeed"></span><span id ="Pressure"></span></h3>
+         <div class="tempcontainer"><p id ="maxtemp"></p>
+            <span id ="temperature"></span>
+            <p id ="mintemp"></p>
+        </div> 
+          <P id ="coordinates"></P>
+          <span id ="sunrise"></span>
+          <span id ="sunset"></span>
+    </div>
+    <button class="btn waves-effect waves-light indigo" id='toogletempbtn'>Convert to °F </button>
+      </div>  
+    </main>
+  </div>
+           </section>
+    <script>
+        $(document).ready(function () {
+                $('#message').hide();
+                $('.card').hide();
+               
+                $("#details").click(function () {
+                    var weatherdata = {
+                    city: $('#city').val().trim()
+                                };
+                console.log(weatherdata)
+                    $.ajax({
+                        url: "/weatherinfo",
+                        method: "POST",
+                        data: weatherdata,
+                        success: function (result,textStatus,xhr) {
+                            try {
+                                if(xhr.status==200){
+                                    $('#message').hide();
+                                    var boolTemp=true;
+                                    $('#toogletempbtn').click(function(){
+                    if(boolTemp==true){
+                        boolTemp=false;
+                        $('#toogletempbtn').html('Convert to °C');
+                        $('#temperature').html((1.8 * (result.weather.main.temp-273.15)+32).toString().substring(0,5)+"°F");
+                        $("#maxtemp").html((1.8 * (result.weather.main.temp_max-273.15)+32).toString().substring(0,5)+"°F");
+                        $("#mintemp").html((1.8 * (result.weather.main.temp_min-273.15)+32).toString().substring(0,5)+"°F");
+                        console.log(boolTemp+"value of booltemp");
+                    }
+                    else{
+                        boolTemp=true;
+                        $('#toogletempbtn').html('Convert to °F');
+                        $('#temperature').html((result.weather.main.temp-273.15).toString().substring(0,5)+"°C");
+                        $("#maxtemp").html((result.weather.main.temp_max-273.15).toString().substring(0,5)+"°C");
+                        $("#mintemp").html((result.weather.main.temp_min-273.15).toString().substring(0,5)+"°C");
+                        console.log(boolTemp+"value of booltemp");
+                    }
+                });
+                                    var iconCode=result.weather.weather[0].icon;
+                                    var iconUrl="http://openweathermap.org/img/w/" + iconCode + ".png";
+                                    $(".icon").html("<img src='" + iconUrl  + "'>");
+                                $('.card').show();
+                                $('.city').html(result.data.city+","+result.weather.sys.country);
+                                $('#temperature').html((result.weather.main.temp-273.15).toString().substring(0,5)+"°C");
+                                $("#maxtemp").html((result.weather.main.temp_max-273.15).toString().substring(0,5)+"°C");
+                                $("#mintemp").html((result.weather.main.temp_min-273.15).toString().substring(0,5)+"°C");
+                                $("#Description").html(result.weather.weather[0].description);
+                                $("#Humidity").html("Humidity:"+result.weather.main.humidity+"Pa");
+                                $("#coordinates").html("Coordinates:"+result.weather.coord.lon+"/"+result.weather.coord.lat);
+                                $("#windspeed").html("WindSpeed:"+result.weather.wind.speed+"m/s");
+                                $("#Pressure").html("Pressure:"+result.weather.main.pressure+"PA");
+                                $("#sunrise").html("Sunrise:"+new Date(result.weather.sys.sunrise*1000).getHours()+":"+new Date(result.weather.sys.sunrise).getMinutes());
+                                $("#sunset").html("Sunset:"+new Date(result.weather.sys.sunset*1000).getHours()+":"+new Date(result.weather.sys.sunrise).getMinutes());
+                                    console.log(xhr.status+"status******");
+                                    console.log("Max Temperature:"+(result.weather.main.temp_max-273.15)+"°C"+"maxtemperature*********");
+                                    console.log("sunset"+"Sunset"+new Date(result.weather.sys.sunset*1000).getHours()+":"+new Date(result.weather.sys.sunrise).getMinutes());
+                                console.log("result is *******************" + JSON.stringify(result));
+                                $('#city').val('');
+                                }
+                                else{
+                                    $('.card').hide();
+                                    $('#message').show();
+                                    $('#message').html("Please enter a valid city");
+                                    console.log("something went wrong");
+                                    $('#city').html('');
+                                }
+                            } catch (e) {
+                                console.log(e);
+                                $('#message').show();
+                                $('.card').hide();
+                                    $('#message').html("Please enter a valid city");
+                                    console.log("something went wrong");
+                                    $('#city').val('');
+                            }
+                        },
+                        error: function () {
+                            $('#message').show();
+                            $('.card').hide();
+                                    $('#message').html("Please enter a valid city");
+                                    console.log("something went wrong");
+                                    $('#city').val('');
+                        }
+                    });
+                });
+                
+            });
+    </script>
+    </div>
+    </main>
+</body>
+</html>
